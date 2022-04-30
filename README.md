@@ -25,4 +25,4 @@ Run the application and use the keyboard to navigate and enter data.
 ![Screenshot](./screenshot.png)
 
 ## Demonstration
-Here is a [Video Demonstration](https://)
+Here is a [Video Demonstration](https://drive.google.com/file/d/1zZGb_DuWFNVV73VZqV5g5R3HXvNX8CiX/view)

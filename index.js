@@ -124,7 +124,6 @@ const addEmployee = () => {
             .then((newhire) => {
                 var sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
                 roleDept = empRoles.indexOf(newhire.dept) + 1;
-                console.log(newhire.firstname, newhire.lastname, empRoles, roleDept, newhire.manager);
                 var empManager = empNames.indexOf(newhire.manager);
                 var params = [newhire.firstname, newhire.lastname, roleDept, empManager];
                 if (empManager === 0) {
@@ -155,7 +154,6 @@ const updateEmployee = () => {
         }
         var empNames = [];
         rowsNames.forEach(element => empNames.push(element.fullname));
-        console.log(empNames);
         db.query(sqlRoles, (err, rowsRoles) => {
             if (err) {
                 console.log({ error: err.message });
@@ -163,7 +161,6 @@ const updateEmployee = () => {
             }
             var empRoles = [];
             rowsRoles.forEach(element => empRoles.push(element.title));
-            console.log(empRoles);
             return inquirer.prompt([{
                 type: 'list',
                 default: 0,
@@ -181,11 +178,9 @@ const updateEmployee = () => {
                 pageSize: 9
             }])
             .then((changerole) => {
-                console.log(changerole);
                 const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
                 roleDept = empRoles.indexOf(changerole.dept) + 1;
                 empID = empNames.indexOf(changerole.name) + 1;
-                console.log(changerole.dept, roleDept, changerole.name, empID);
                 const params = [roleDept, empID];
                 db.query(sql, params, (err, result) => {
                     if (err) {
@@ -193,7 +188,7 @@ const updateEmployee = () => {
                         return;
                     }
                 })
-                console.log(`Added ${changerole.name} to Database.`);
+                console.log(`Updated Role for ${changerole.name} in Database.`);
                 manageEmployees();
             })
         })
