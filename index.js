@@ -148,31 +148,66 @@ const viewRoles = () => {
 };
 
 const addRole = () => {
-    return inquirer.prompt([{
-        type: 'text',
-        name: 'newrole',
-        message: "What is the New Role?",
-        validate: newroleInput => {
-            if (newroleInput) {
-                return true;
-            } else {
-                console.log("Please enter a Role!");
-                return false;
-            }
+    const sql = `SELECT deptname FROM department`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.log({ error: err.message });
+            return;
         }
-    }])
-    .then(({ newroledata }) => {
-        const sql = `INSERT INTO jobrole (title, salary, department_id) VALUES (?,?,?)`;
-        const params = newdept;
-        db.query (sql, params, (err, result) => {
-            if (err) {
-                console.log({ error: err.message });
-                return;
+        var depts = [];
+        rows.forEach(element => depts.push(element.deptname));
+        console.log(depts);
+        return inquirer.prompt([{
+            type: 'text',
+            name: 'newrole',
+            message: "What is the New Role?",
+            validate: newroleInput => {
+                if (newroleInput) {
+                    return true;
+                } else {
+                    console.log("Please enter a Role!");
+                    return false;
+                }
             }
+        },
+        {
+            type: 'text',
+            name: 'salary',
+            message: "What is the Salary for this Role?",
+            validate: salaryInput => {
+                if (salaryInput) {
+                    return true;
+                } else {
+                    console.log("Please enter a Salary!");
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'list',
+            default: 0,
+            name: 'dept',
+            message: 'What Department is this Role in? (Use arrow keys)',
+            choices: depts,
+            pageSize: 9
+        }])
+        .then(( newroledata ) => {
+            console.log(newroledata)
+            const sql = `INSERT INTO jobrole (title, salary, department_id) VALUES (?,?,?)`;
+            roleDept = depts.indexOf(newroledata.dept) + 1;
+            console.log(newroledata.newrole, newroledata.salary, roleDept);
+            const params = [newroledata.newrole, newroledata.salary, roleDept];
+            db.query(sql, params, (err, result) => {
+                if (err) {
+                    console.log({ error: err.message });
+                    return;
+                }
+            })
+            console.log(`Added ${newroledata.newrole} to Database.`);
+            manageEmployees();
         })
-        console.log(`Added ${newdept} to Database.`);
-        manageEmployees();
     })
+
 };
 
 const viewDepartments = () => {
