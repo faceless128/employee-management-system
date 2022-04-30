@@ -8,7 +8,7 @@ db.connect(err => {
     console.log('Database connected.')
 });
 
-// Function to initialize app and start asking questions
+// Start asking questions
 const manageEmployees = () => {
     return inquirer.prompt({
         type: 'list',
@@ -39,7 +39,7 @@ const manageEmployees = () => {
     })
 };
 
-
+// View Employees
 const viewEmployees = () => {
     const sql = `SELECT e.id, e.first_name, e.last_name, j.title, d.deptname AS department, j.salary, 
     CONCAT (m.first_name, ' ', m.last_name) AS manager
@@ -62,6 +62,7 @@ const viewEmployees = () => {
     })
 };
 
+// Add Employees
 const addEmployee = () => {
     const sqlNames = `SELECT CONCAT(first_name, ' ', last_name) AS fullname FROM employee`;
     const sqlRoles = `SELECT title FROM jobrole`;
@@ -121,14 +122,15 @@ const addEmployee = () => {
                 pageSize: 9
             }])
             .then((newhire) => {
-                const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
+                var sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
                 roleDept = empRoles.indexOf(newhire.dept) + 1;
                 console.log(newhire.firstname, newhire.lastname, empRoles, roleDept, newhire.manager);
                 var empManager = empNames.indexOf(newhire.manager);
-                if (newhire.manager === 0) {
-                    empManager = 'NULL';
+                var params = [newhire.firstname, newhire.lastname, roleDept, empManager];
+                if (empManager === 0) {
+                    sql = `INSERT INTO employee (first_name, last_name, role_id) VALUES (?,?,?)`;
+                    params = [newhire.firstname, newhire.lastname, roleDept];
                 }
-                const params = [newhire.firstname, newhire.lastname, roleDept, empManager];
                 db.query(sql, params, (err, result) => {
                     if (err) {
                         console.log({ error: err.message });
@@ -142,7 +144,7 @@ const addEmployee = () => {
     })
 }
 
-    
+// Update Employee Job Role
 const updateEmployee = () => {
     const sqlNames = `SELECT CONCAT(first_name, ' ', last_name) AS fullname FROM employee`;
     const sqlRoles = `SELECT title FROM jobrole`;
@@ -198,6 +200,7 @@ const updateEmployee = () => {
     })    
 };
 
+// View Roles
 const viewRoles = () => {
     const sql = `SELECT j.id, j.title, d.deptname AS department, j.salary
     FROM jobrole j
@@ -213,6 +216,7 @@ const viewRoles = () => {
     })
 };
 
+// Add Roles
 const addRole = () => {
     const sql = `SELECT deptname FROM department`;
     db.query(sql, (err, rows) => {
@@ -272,6 +276,7 @@ const addRole = () => {
     })
 };
 
+// View Departments
 const viewDepartments = () => {
     const sql = `SELECT * FROM department`;
     db.query (sql, (err, rows) =>{
@@ -284,6 +289,7 @@ const viewDepartments = () => {
     })
 };
 
+// Add Departments
 const addDepartment = () => {
     return inquirer.prompt([{
         type: 'text',
@@ -312,10 +318,12 @@ const addDepartment = () => {
     })
 };
 
+// Exit Application
 const quitApp = () => {
     process.exit();
 };
 
+// Ascii Splash Screen
 const splash = () => {
     console.log(`
     ______                __                                    
