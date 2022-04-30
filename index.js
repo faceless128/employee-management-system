@@ -21,7 +21,7 @@ const manageEmployees = () => {
     .then(({ menuOptions }) => {
         if (menuOptions === 'View All Employees') {
             viewEmployees()
-        } else if (menuOptions === 'Add Employees' ) {
+        } else if (menuOptions === 'Add Employee' ) {
             addEmployee()
         } else if (menuOptions === 'Update Employee Role') {
             updateEmployee()
@@ -63,73 +63,139 @@ const viewEmployees = () => {
 };
 
 const addEmployee = () => {
-    const jobQuery = `SELECT title FROM jobrole`;
-    db.query (jobQuery, (err, jobRoles) =>{
+    const sqlNames = `SELECT CONCAT(first_name, ' ', last_name) AS fullname FROM employee`;
+    const sqlRoles = `SELECT title FROM jobrole`;
+    db.query(sqlNames, (err, rowsNames) => {
         if (err) {
             console.log({ error: err.message });
             return;
         }
-        console.table(jobRoles);
-    })
-    const managerQuery = `SELECT CONCAT(first_name, ' ', last_name) FROM employee`;
-    db.query (managerQuery, (err, managerChoice) =>{
-        if (err) {
-            console.log({ error: err.message });
-            return;
-        }
-        console.table(managerChoice);
-    })
-    return inquirer.prompt([{
-        type: 'text',
-        name: 'firstName',
-        message: "What is the Employee's first name?",
-        validate: firstNameInput => {
-            if (firstNameInput) {
-                return true;
-            } else {
-                console.log("Please enter a name!");
-                return false;
+        var empNames = ['None'];
+        rowsNames.forEach(element => empNames.push(element.fullname));
+        db.query(sqlRoles, (err, rowsRoles) => {
+            if (err) {
+                console.log({ error: err.message });
+                return;
             }
-        }
-    },
-    {
-        type: 'text',
-        name: 'lastName',
-        message: "What is the Employee's last name?",
-        validate: lastNameInput => {
-            if (lastNameInput) {
-                return true;
-            } else {
-                console.log("Please enter a name!");
-                return false;
-            }
-        }
-    },
-    {
-        type: 'rawlist',
-        default: 0,
-        name: 'jobrole',
-        message: "What is the Employee's Job Role? (Use arrow keys)",
-        choices: [jobRoles, new inquirer.Separator()],
-        pageSize: 9
-    },
-    {
-        type: 'rawlist',
-        default: 0,
-        name: 'manager',
-        message: "Who is the Employee's Manager? (Use arrow keys)",
-        choices: [managerChoice, new inquirer.Separator()],
-        pageSize: 9
-    }])
-    .then(({ answers }) => {
-        console.table(answers);
-        const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
-        const params = [answers.firstName, answers.lastName, answers.jobrole, answers.manager];
-        manageEmployees();
+            var empRoles = [];
+            rowsRoles.forEach(element => empRoles.push(element.title));
+            return inquirer.prompt([{
+                type: 'text',
+                name: 'firstname',
+                message: "What is the Employee's First Name?",
+                validate: firstnameInput => {
+                    if (firstnameInput) {
+                        return true;
+                    } else {
+                        console.log("Please enter a Name!");
+                        return false;
+                    }
+                }
+            },
+            {
+                type: 'text',
+                name: 'lastname',
+                message: "What is the Employee's Last Name?",
+                validate: lastnameInput => {
+                    if (lastnameInput) {
+                        return true;
+                    } else {
+                        console.log("Please enter a Name!");
+                        return false;
+                    }
+                }
+            },{
+                type: 'list',
+                default: 0,
+                name: 'dept',
+                message: "What is this Employee's Role? (Use arrow keys)",
+                choices: empRoles,
+                pageSize: 9
+            },
+            {
+                type: 'list',
+                default: 0,
+                name: 'manager',
+                message: "Who is the Employee's Manager? (Use arrow keys)",
+                choices: empNames,
+                pageSize: 9
+            }])
+            .then((newhire) => {
+                const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
+                roleDept = empRoles.indexOf(newhire.dept) + 1;
+                console.log(newhire.firstname, newhire.lastname, empRoles, roleDept, newhire.manager);
+                var empManager = empNames.indexOf(newhire.manager);
+                if (newhire.manager === 0) {
+                    empManager = 'NULL';
+                }
+                const params = [newhire.firstname, newhire.lastname, roleDept, empManager];
+                db.query(sql, params, (err, result) => {
+                    if (err) {
+                        console.log({ error: err.message });
+                        return;
+                    }
+                })
+                console.log(`Added ${newhire.firstname} ${newhire.lastname} to Database.`);
+                manageEmployees();
+            })
+        })
     })
-};
+}
 
+    
 const updateEmployee = () => {
+    const sqlNames = `SELECT CONCAT(first_name, ' ', last_name) AS fullname FROM employee`;
+    const sqlRoles = `SELECT title FROM jobrole`;
+    db.query(sqlNames, (err, rowsNames) => {
+        if (err) {
+            console.log({ error: err.message });
+            return;
+        }
+        var empNames = [];
+        rowsNames.forEach(element => empNames.push(element.fullname));
+        console.log(empNames);
+        db.query(sqlRoles, (err, rowsRoles) => {
+            if (err) {
+                console.log({ error: err.message });
+                return;
+            }
+            var empRoles = [];
+            rowsRoles.forEach(element => empRoles.push(element.title));
+            console.log(empRoles);
+            return inquirer.prompt([{
+                type: 'list',
+                default: 0,
+                name: 'name',
+                message: "Which Employee is changing Roles? (Use arrow keys)",
+                choices: empNames,
+                pageSize: 9
+            },
+            {
+                type: 'list',
+                default: 0,
+                name: 'dept',
+                message: "What is this Employee's New Role? (Use arrow keys)",
+                choices: empRoles,
+                pageSize: 9
+            }])
+            .then((changerole) => {
+                console.log(changerole);
+                const sql = `UPDATE employee SET role_id = ? WHERE id = ?`;
+                roleDept = empRoles.indexOf(changerole.dept) + 1;
+                empID = empNames.indexOf(changerole.name) + 1;
+                console.log(changerole.dept, roleDept, changerole.name, empID);
+                const params = [roleDept, empID];
+                db.query(sql, params, (err, result) => {
+                    if (err) {
+                        console.log({ error: err.message });
+                        return;
+                    }
+                })
+                console.log(`Added ${changerole.name} to Database.`);
+                manageEmployees();
+            })
+        })
+    })    
 };
 
 const viewRoles = () => {
@@ -156,7 +222,6 @@ const addRole = () => {
         }
         var depts = [];
         rows.forEach(element => depts.push(element.deptname));
-        console.log(depts);
         return inquirer.prompt([{
             type: 'text',
             name: 'newrole',
@@ -192,10 +257,8 @@ const addRole = () => {
             pageSize: 9
         }])
         .then(( newroledata ) => {
-            console.log(newroledata)
             const sql = `INSERT INTO jobrole (title, salary, department_id) VALUES (?,?,?)`;
             roleDept = depts.indexOf(newroledata.dept) + 1;
-            console.log(newroledata.newrole, newroledata.salary, roleDept);
             const params = [newroledata.newrole, newroledata.salary, roleDept];
             db.query(sql, params, (err, result) => {
                 if (err) {
@@ -207,7 +270,6 @@ const addRole = () => {
             manageEmployees();
         })
     })
-
 };
 
 const viewDepartments = () => {
