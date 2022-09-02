@@ -3,7 +3,7 @@
 ## Description
 A clean command-line application for managing an employee database.
 
-  ## Table of Contents
+## Table of Contents
 * [Features](#features)
 * [Installation](#installation)
 * [Usage](#usage)
