@@ -10,7 +10,7 @@ VALUES
   ('Greeter', 18000, 1),
   ('Chef', 25000, 2),
   ('Prepper', 22000, 2);
-  INSERT INTO employee (first_name, last_name, role_id, manager_id)
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES
   ('Michael', 'Jordan', 1, NULL),
   ('Magic', 'Johnson', 2, NULL),
