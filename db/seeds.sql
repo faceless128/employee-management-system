@@ -24,3 +24,4 @@ VALUES
   ('Patrick', 'Ewing', 6, 2),
   ('Larry', 'Bird', 6, 2),
   ('Christian', 'Laettner', 6, 2);
+  
