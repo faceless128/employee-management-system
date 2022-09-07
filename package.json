@@ -1,7 +1,7 @@
 {
   "name": "employee-management-system",
   "version": "1.0.0",
-  "description": "## Description A clean command-line application for managing an employee database.",
+  "description": "A clean command-line application for managing an employee database.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
